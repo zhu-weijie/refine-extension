@@ -13,7 +13,11 @@
     <p>Enter one keyword per line. Hides jobs if the keyword is in the title.</p>
     <textarea id="keywordList" rows="5" cols="40" placeholder="e.g., Urgent Hiring, Web3"></textarea>
 
-    <button id="saveButton">Save Lists</button>
+    <div class="button-group">
+        <button id="saveButton">Save Lists</button>
+        <button id="exportButton" class="secondary">Export to JSON</button>
+    </div>
+    
     <div id="status"></div>
 
     <script src="popup.js"></script>
