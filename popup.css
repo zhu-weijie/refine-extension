@@ -55,3 +55,17 @@ button:hover {
 .mt-15 {
     margin-top: 15px;
 }
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+button.secondary {
+    background-color: #6c757d;
+    border: 1px solid #6c757d;
+}
+
+button.secondary:hover {
+    background-color: #5a6268;
+}
