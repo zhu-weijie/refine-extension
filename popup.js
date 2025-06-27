@@ -1,12 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const blockListTextArea = document.getElementById('blockList');
     const saveButton = document.getElementById('saveButton');
+    const statusDiv = document.getElementById('status');
+
+    chrome.storage.sync.get(['blockedItems'], (result) => {
+        if (result.blockedItems && Array.isArray(result.blockedItems)) {
+            blockListTextArea.value = result.blockedItems.join('\n');
+        }
+    });
 
     saveButton.addEventListener('click', () => {
-        const statusDiv = document.getElementById('status');
-        statusDiv.textContent = 'Save button clicked! (No data saved yet)';
+        const itemsText = blockListTextArea.value;
         
-        setTimeout(() => {
-            statusDiv.textContent = '';
-        }, 2500);
+        const itemsArray = itemsText.split('\n')
+                                     .map(item => item.trim())
+                                     .filter(item => item.length > 0);
+
+        chrome.storage.sync.set({ blockedItems: itemsArray }, () => {
+            statusDiv.textContent = 'List saved!';
+            setTimeout(() => {
+                statusDiv.textContent = '';
+            }, 2500);
+        });
     });
 });
