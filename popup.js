@@ -1,43 +1,47 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const blockListTextArea = document.getElementById('blockList');
+    const companyListTextArea = document.getElementById('companyList');
+    const keywordListTextArea = document.getElementById('keywordList');
     const saveButton = document.getElementById('saveButton');
     const statusDiv = document.getElementById('status');
 
-    chrome.storage.sync.get(['blockedItems'], (result) => {
-        if (chrome.runtime.lastError) {
-            console.error("Error loading blocklist:", chrome.runtime.lastError);
-            return;
+    const processList = (textArea) => {
+        return textArea.value.split('\n')
+            .map(item => item.trim())
+            .filter(item => item.length > 0)
+            .sort((a, b) => a.localeCompare(b));
+    };
+
+    chrome.storage.sync.get(['blockedCompanies', 'blockedKeywords'], (result) => {
+        if (chrome.runtime.lastError) return;
+        
+        if (result.blockedCompanies) {
+            companyListTextArea.value = result.blockedCompanies.join('\n');
         }
-        if (result.blockedItems && Array.isArray(result.blockedItems)) {
-            blockListTextArea.value = result.blockedItems.join('\n');
+        if (result.blockedKeywords) {
+            keywordListTextArea.value = result.blockedKeywords.join('\n');
         }
     });
 
     saveButton.addEventListener('click', () => {
-        const itemsText = blockListTextArea.value;
-        
-        const itemsArray = itemsText.split('\n')
-                                     .map(item => item.trim())
-                                     .filter(item => item.length > 0);
+        const sortedCompanies = processList(companyListTextArea);
+        const sortedKeywords = processList(keywordListTextArea);
 
-        const sortedItems = itemsArray.sort((a, b) => a.localeCompare(b));
-
-        chrome.storage.sync.set({ blockedItems: sortedItems }, () => {
+        chrome.storage.sync.set({
+            blockedCompanies: sortedCompanies,
+            blockedKeywords: sortedKeywords
+        }, () => {
             if (chrome.runtime.lastError) {
-                console.error("Error saving blocklist:", chrome.runtime.lastError);
-                statusDiv.textContent = 'Error saving!';
+                statusDiv.textContent = 'Error saving lists!';
                 statusDiv.style.color = 'red';
             } else {
-                console.log("Blocklist saved and sorted.");
-                statusDiv.textContent = 'List saved and sorted!';
+                statusDiv.textContent = 'Lists saved and sorted!';
                 statusDiv.style.color = 'green';
                 
-                blockListTextArea.value = sortedItems.join('\n');
+                companyListTextArea.value = sortedCompanies.join('\n');
+                keywordListTextArea.value = sortedKeywords.join('\n');
             }
             
-            setTimeout(() => {
-                statusDiv.textContent = '';
-            }, 2500);
+            setTimeout(() => { statusDiv.textContent = ''; }, 2500);
         });
     });
 });

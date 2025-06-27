@@ -51,3 +51,7 @@ button:hover {
     font-size: 0.9em;
     color: green;
 }
+
+.mt-15 {
+    margin-top: 15px;
+}
