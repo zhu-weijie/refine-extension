@@ -1,47 +1,64 @@
-function hideBlockedJobs() {
-    chrome.storage.sync.get(['blockedItems'], (result) => {
-        if (!result.blockedItems || !Array.isArray(result.blockedItems) || result.blockedItems.length === 0) {
-            return; 
+if (window.hasRunRefineScript) {
+
+} else {
+    window.hasRunRefineScript = true;
+
+    console.log("Refine: Content script injected and running for the first time.");
+
+    const siteConfigs = {
+        "www.mycareersfuture.gov.sg": {
+            jobCardSelector: 'div[data-testid="job-card"]',
+            companyNameSelector: 'p[data-testid="company-hire-info"]',
+        }
+    };
+
+    function hideBlockedJobs(config, blockedItems) {
+        console.log("Refine: hideBlockedJobs function is running.");
+        const jobCards = document.querySelectorAll(config.jobCardSelector);
+        
+        if (jobCards.length === 0) {
+            console.log("Refine: Found 0 job cards. The selector might be wrong or content hasn't loaded.");
         }
 
-        const blockedItems = result.blockedItems.map(item => item.toUpperCase());
-
-        const jobCardSelector = 'div[data-testid="job-card"]';
-        const companyNameSelector = 'p[data-testid="company-hire-info"]';
-
-        const jobCards = document.querySelectorAll(jobCardSelector);
-
         jobCards.forEach(card => {
-            if (card.style.display === 'none') {
-                return;
-            }
-
-            const companyNameElement = card.querySelector(companyNameSelector);
-
+            if (card.dataset.refineHidden === 'true') return;
+            const companyNameElement = card.querySelector(config.companyNameSelector);
             if (companyNameElement) {
                 const companyName = companyNameElement.innerText.trim().toUpperCase();
-
                 if (blockedItems.includes(companyName)) {
-                    console.log(`Refine: Hiding job from "${companyNameElement.innerText.trim()}"`);
+                    console.log(`Refine: Hiding job from "${companyName}"`);
                     card.style.display = 'none';
+                    card.dataset.refineHidden = 'true';
                 }
             }
         });
-    });
-}
-
-const observer = new MutationObserver((mutationsList, observer) => {
-    for (const mutation of mutationsList) {
-        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-            hideBlockedJobs();
-            break;
-        }
     }
-});
 
-observer.observe(document.body, { 
-    childList: true,
-    subtree: true
-});
+    (() => {
+        const currentHostname = window.location.hostname;
+        const config = siteConfigs[currentHostname];
+        if (!config) return;
 
-hideBlockedJobs();
+        console.log("Refine: Configuration found. Attempting to get block list from storage.");
+
+        chrome.storage.sync.get(['blockedItems'], (result) => {
+            if (chrome.runtime.lastError) {
+                console.error("Refine Error:", chrome.runtime.lastError);
+                return;
+            }
+
+            if (!result.blockedItems || result.blockedItems.length === 0) {
+                console.log("Refine: Block list is empty or not found in storage.");
+                return;
+            }
+            
+            const blockedItems = result.blockedItems.map(item => item.toUpperCase());
+            console.log("Refine: Block list loaded:", blockedItems);
+            
+            hideBlockedJobs(config, blockedItems);
+            setInterval(() => {
+                hideBlockedJobs(config, blockedItems);
+            }, 1000);
+        });
+    })();
+}
