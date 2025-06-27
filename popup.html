@@ -5,10 +5,15 @@
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <h3>Block List</h3>
-    <p>Enter one company name or keyword per line. Names must be an exact match.</p>
-    <textarea id="blockList" rows="10" cols="40" placeholder="e.g., THE SUPREME HR ADVISORY PTE. LTD."></textarea>
-    <button id="saveButton">Save & Apply</button>
+    <h3>Blocked Companies</h3>
+    <p>Enter one company name per line. Exact match required.</p>
+    <textarea id="companyList" rows="8" cols="40" placeholder="e.g., THE SUPREME HR ADVISORY PTE. LTD."></textarea>
+
+    <h3 class="mt-15">Blocked Keywords</h3>
+    <p>Enter one keyword per line. Hides jobs if the keyword is in the title.</p>
+    <textarea id="keywordList" rows="5" cols="40" placeholder="e.g., Urgent Hiring, Web3"></textarea>
+
+    <button id="saveButton">Save Lists</button>
     <div id="status"></div>
 
     <script src="popup.js"></script>
